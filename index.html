@@ -29,6 +29,7 @@ body {
   border: 2px solid #e8e8e8; border-radius: 12px; background: #fafafa;
   cursor: pointer; transition: all 0.2s; text-align: left; font-size: 15px; width: 100%;
 }
+[dir="rtl"] .option { text-align: right; flex-direction: row-reverse; }
 .option:hover:not(.disabled) { border-color: #667eea; background: #f5f3ff; }
 .option.selected { border-color: #667eea; background: #ede9fe; }
 .option.correct { border-color: #22c55e; background: #dcfce7; }
@@ -43,23 +44,54 @@ body {
 .option.selected .opt-label { background: #667eea; color: #fff; }
 .option.correct .opt-label { background: #22c55e; color: #fff; }
 .option.incorrect .opt-label { background: #ef4444; color: #fff; }
+.option.show-correct .opt-label { background: #22c55e; color: #fff; }
 .opt-text { padding-top: 5px; line-height: 1.5; }
-.option-feedback { margin: 8px 0 4px 46px; padding: 12px 16px; border-radius: 8px; font-size: 14px; line-height: 1.5; }
-.option-feedback.correct-feedback { background: #dcfce7; border-left: 3px solid #22c55e; }
-.option-feedback.incorrect-feedback { background: #fef3f2; border-left: 3px solid #fca5a5; }
-.feedback-status { font-weight: 600; margin-bottom: 4px; display: flex; align-items: center; gap: 6px; }
+
+.option-feedback {
+  margin: 8px 0 4px 46px;
+  padding: 12px 16px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+}
+[dir="rtl"] .option-feedback { margin-left: 0; margin-right: 46px; }
+.option-feedback.correct-feedback {
+  background: #dcfce7;
+  border-left: 3px solid #22c55e;
+}
+.option-feedback.incorrect-feedback {
+  background: #fef3f2;
+  border-left: 3px solid #fca5a5;
+}
+.feedback-status {
+  font-weight: 600;
+  margin-bottom: 4px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
 .feedback-status.correct { color: #166534; }
 .feedback-status.incorrect { color: #991b1b; }
+.feedback-rationale { color: #444; }
+
 .next-btn {
   margin-top: 20px; width: 100%; padding: 14px;
   background: linear-gradient(135deg, #667eea, #764ba2); color: #fff; border: none;
   border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
   transition: transform 0.2s, box-shadow 0.2s;
 }
+.next-btn:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(102,126,234,0.4); }
 .hidden { display: none !important; }
 .results { background: #fff; border-radius: 16px; padding: 40px; text-align: center; box-shadow: 0 10px 40px rgba(0,0,0,0.15); display: none; }
 .results.active { display: block; }
-.math { font-family: "Cambria Math", serif; font-style: italic; }
+.results h2 { font-size: 28px; margin-bottom: 10px; color: #333; }
+.results .score { font-size: 64px; font-weight: 700; color: #667eea; margin: 20px 0; }
+.results .score-text { font-size: 18px; color: #666; margin-bottom: 30px; }
+.restart-btn {
+  padding: 14px 40px; background: linear-gradient(135deg, #667eea, #764ba2);
+  color: #fff; border: none; border-radius: 10px; font-size: 15px; font-weight: 600; cursor: pointer;
+}
+.math { font-family: "Cambria Math", "Times New Roman", serif; font-style: italic; }
 </style>
 </head>
 <body>
@@ -67,126 +99,406 @@ body {
   <div class="header">
     <h1>LILA Composter Quiz</h1>
     <div class="meta">10 questions</div>
-    <div class="progress-bar"><div class="progress-fill" id="progress"></div></div>
+    <div class="progress-bar"><div class="progress-fill"></div></div>
   </div>
-
   <div id="quiz-container">
-    <div class="question active" data-index="0">
-      <div class="q-header"><span class="q-number">Question 1</span><span>/ 10</span></div>
-      <div class="q-text">In the P50N model, what is the primary function of the front lid compartment?</div>
+    
+    <div class="question" data-index="0">
+      <div class="q-header"><span class="q-number">Question 1</span><span class="q-of">/ 10</span></div>
+      <div class="q-text">In the P50N model of the LILA machine, what is the primary function of the front lid compartment?</div>
       <div class="options">
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="A"><span class="opt-label">A</span><span class="opt-text">Primary entry for crushing turkey bones.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="true" data-label="B"><span class="opt-label">B</span><span class="opt-text">It houses the air filtration module and carbon pellets.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="C"><span class="opt-label">C</span><span class="opt-text">Storage for backup starter bags.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="D"><span class="opt-label">D</span><span class="opt-text">Designated area for pouring liquid waste.</span></button></div>
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Older models used a crusher, but the P50N model has had the crushing module removed for simplicity.">
+            <span class="opt-label">A</span><span class="opt-text">It serves as the primary entry point for crushing chicken and turkey bones.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Older models used a crusher, but the P50N model has had the crushing module removed for simplicity.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="In the P50N model, the previous crushing function was removed and replaced with an air filtration system where carbon pellets are placed.">
+            <span class="opt-label">B</span><span class="opt-text">It houses the air filtration module and carbon pellets.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">In the P50N model, the previous crushing function was removed and replaced with an air filtration system where carbon pellets are placed.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Starter bags should be placed directly into the chambers or stored separately.">
+            <span class="opt-label">C</span><span class="opt-text">It is used for storing backup starter bags to keep them dry.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Starter bags should be placed directly into the chambers or stored separately.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Liquids should always be avoided in the machine to prevent odors and damage.">
+            <span class="opt-label">D</span><span class="opt-text">It is a designated area for pouring liquid waste.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Liquids should always be avoided in the machine to prevent odors and damage.</div>
+          </div>
+        </div>
       </div>
       <button class="next-btn hidden">Next Question →</button>
     </div>
 
     <div class="question" data-index="1">
-      <div class="q-header"><span class="q-number">Question 2</span><span>/ 10</span></div>
-      <div class="q-text">How should soft scraps, like banana peels, be prepared for the back chamber?</div>
+      <div class="q-header"><span class="q-number">Question 2</span><span class="q-of">/ 10</span></div>
+      <div class="q-text">How should soft scraps, such as banana peels or grapevines, be prepared before being added to the back chamber?</div>
       <div class="options">
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="A"><span class="opt-label">A</span><span class="opt-text">They should be blended into a liquid.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="B"><span class="opt-label">B</span><span class="opt-text">They should be frozen first.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="true" data-label="C"><span class="opt-label">C</span><span class="opt-text">They must be cut into pieces approx. 1 inch in size.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="D"><span class="opt-label">D</span><span class="opt-text">They can be added whole without prep.</span></button></div>
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Freezing isn't required; physical size reduction is the key to preventing jams.">
+            <span class="opt-label">A</span><span class="opt-text">They should be frozen first to break down the cellular structure.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Freezing isn't required; physical size reduction is the key to preventing jams.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Blending creates liquid/paste which causes odors and leaks.">
+            <span class="opt-label">B</span><span class="opt-text">They should be blended into a liquid paste for faster processing.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Blending creates liquid/paste which causes odors and leaks.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Cutting long fibers and large soft scraps into 1-inch pieces prevents jams and ensures efficient microbial decomposition.">
+            <span class="opt-label">C</span><span class="opt-text">They must be cut into pieces approximately 1 inch in size.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Cutting long fibers and large soft scraps into 1-inch pieces prevents jams and ensures efficient microbial decomposition.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Adding whole fibers can cause the internal mechanisms to tangle or jam.">
+            <span class="opt-label">D</span><span class="opt-text">They can be added whole as long as they are placed in the center.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Adding whole fibers can cause the internal mechanisms to tangle or jam.</div>
+          </div>
+        </div>
       </div>
       <button class="next-btn hidden">Next Question →</button>
     </div>
 
     <div class="question" data-index="2">
-      <div class="q-header"><span class="q-number">Question 3</span><span>/ 10</span></div>
-      <div class="q-text">Which restriction applies to the P50N model with the air filtration system?</div>
+      <div class="q-header"><span class="q-number">Question 3</span><span class="q-of">/ 10</span></div>
+      <div class="q-text">Which of the following is a strict material restriction for users of the P50N model?</div>
       <div class="options">
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="A"><span class="opt-label">A</span><span class="opt-text">Paper towels must be soaked in water.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="B"><span class="opt-label">B</span><span class="opt-text">Only citrus scraps are allowed.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="C"><span class="opt-label">C</span><span class="opt-text">Moldy food must be rinsed.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="true" data-label="D"><span class="opt-label">D</span><span class="opt-text">No chicken bones or hard items are permitted.</span></button></div>
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Correct! Because the P50N lacks a crushing module, hard materials like bones are prohibited.">
+            <span class="opt-label">A</span><span class="opt-text">No chicken bones or hard items are permitted in the machine.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Correct! Because the P50N lacks a crushing module, hard materials like bones are prohibited.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="The front lid is for filtration pellets, not citrus scraps.">
+            <span class="opt-label">B</span><span class="opt-text">Only citrus-based scraps are allowed in the front lid.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">The front lid is for filtration pellets, not citrus scraps.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Adding extra moisture is discouraged; the machine works best when controlled.">
+            <span class="opt-label">C</span><span class="opt-text">Cardboard must be soaked in water before entry.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Adding extra moisture is discouraged; the machine works best when controlled.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Moldy food is actually acceptable for the microbes and doesn't need rinsing.">
+            <span class="opt-label">D</span><span class="opt-text">Moldy food must be thoroughly rinsed first.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Moldy food is actually acceptable for the microbes and doesn't need rinsing.</div>
+          </div>
+        </div>
       </div>
       <button class="next-btn hidden">Next Question →</button>
     </div>
 
     <div class="question" data-index="3">
-      <div class="q-header"><span class="q-number">Question 4</span><span>/ 10</span></div>
-      <div class="q-text">During the first weeks, what is the max daily weight of scraps to add?</div>
+      <div class="q-header"><span class="q-number">Question 4</span><span class="q-of">/ 10</span></div>
+      <div class="q-text">During the initial weeks, what is the recommended max daily weight of food scraps?</div>
       <div class="options">
-        <div class="option-wrapper"><button class="option" data-correct="true" data-label="A"><span class="opt-label">A</span><span class="opt-text">500g</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="B"><span class="opt-label">B</span><span class="opt-text">1.5 lbs</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="C"><span class="opt-label">C</span><span class="opt-text">100g</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="D"><span class="opt-label">D</span><span class="opt-text">1000g</span></button></div>
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="1.5lbs is the goal for later, but too much for week one.">
+            <span class="opt-label">A</span><span class="opt-text">1.5 lbs</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">1.5lbs is the goal for later, but too much for week one.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Correct! Starting with 500g allows the young microbial colony to stabilize.">
+            <span class="opt-label">B</span><span class="opt-text">500g</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Correct! Starting with 500g allows the young microbial colony to stabilize.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="100g is safe, but 500g is the recommended starting threshold.">
+            <span class="opt-label">C</span><span class="opt-text">100g</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">100g is safe, but 500g is the recommended starting threshold.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="1000g might overwhelm the microbes before they are established.">
+            <span class="opt-label">D</span><span class="opt-text">1000g</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">1000g might overwhelm the microbes before they are established.</div>
+          </div>
+        </div>
       </div>
       <button class="next-btn hidden">Next Question →</button>
     </div>
 
     <div class="question" data-index="4">
-      <div class="q-header"><span class="q-number">Question 5</span><span>/ 10</span></div>
-      <div class="q-text">When should you rotate to the second chamber?</div>
+      <div class="q-header"><span class="q-number">Question 5</span><span class="q-of">/ 10</span></div>
+      <div class="q-text">When should a user rotate the internal hopper to the second chamber?</div>
       <div class="options">
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="A"><span class="opt-label">A</span><span class="opt-text">Every 24 hours exactly.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="true" data-label="B"><span class="opt-label">B</span><span class="opt-text">When the active chamber reaches 70% fullness.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="C"><span class="opt-label">C</span><span class="opt-text">When it is overflowing.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="D"><span class="opt-label">D</span><span class="opt-text">When the light flashes yellow.</span></button></div>
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Daily rotation is unnecessary; it's based on volume.">
+            <span class="opt-label">A</span><span class="opt-text">Exactly every 24 hours.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Daily rotation is unnecessary; it's based on volume.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Overflowing prevents proper airflow and maturation.">
+            <span class="opt-label">B</span><span class="opt-text">Only when the first chamber is overflowing.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Overflowing prevents proper airflow and maturation.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="LED yellow lights usually signal lid sensor issues, not capacity.">
+            <span class="opt-label">C</span><span class="opt-text">Whenever the LED light flashes yellow.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">LED yellow lights usually signal lid sensor issues, not capacity.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Correct! Rotating at 70% leaves room for waste to break down properly.">
+            <span class="opt-label">D</span><span class="opt-text">When the active chamber reaches approximately 70% fullness.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Correct! Rotating at 70% leaves room for waste to break down properly.</div>
+          </div>
+        </div>
       </div>
       <button class="next-btn hidden">Next Question →</button>
     </div>
 
     <div class="question" data-index="5">
-      <div class="q-header"><span class="q-number">Question 6</span><span>/ 10</span></div>
-      <div class="q-text">How much compost should be retained to act as a 'starter'?</div>
+      <div class="q-header"><span class="q-number">Question 6</span><span class="q-of">/ 10</span></div>
+      <div class="q-text">How much compost should be retained when harvesting a finished batch (Sourdough concept)?</div>
       <div class="options">
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="A"><span class="opt-label">A</span><span class="opt-text">None, empty it completely.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="B"><span class="opt-label">B</span><span class="opt-text">Only the bottom 5%.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="true" data-label="C"><span class="opt-label">C</span><span class="opt-text">About one-third (1/3).</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="D"><span class="opt-label">D</span><span class="opt-text">100% until both are full.</span></button></div>
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Sanitizing kills the beneficial microbes you need for the next cycle.">
+            <span class="opt-label">A</span><span class="opt-text">None; it should be completely emptied and sanitized.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Sanitizing kills the beneficial microbes you need for the next cycle.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="5% isn't enough to sustain a robust colony for new waste.">
+            <span class="opt-label">B</span><span class="opt-text">Only the very bottom layer (approx 5%).</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">5% isn't enough to sustain a robust colony for new waste.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="true" data-rationale="Correct! Keeping 1/3 provides enough microbes to start the next batch.">
+            <span class="opt-label">C</span><span class="opt-text">About one-third (1/3) of the finished compost.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Correct! Keeping 1/3 provides enough microbes to start the next batch.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Finished compost should be harvested to make room for new cycles.">
+            <span class="opt-label">D</span><span class="opt-text">Exactly 100% until both chambers are full.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Finished compost should be harvested to make room for new cycles.</div>
+          </div>
+        </div>
       </div>
       <button class="next-btn hidden">Next Question →</button>
     </div>
 
     <div class="question" data-index="6">
-      <div class="q-header"><span class="q-number">Question 7</span><span>/ 10</span></div>
-      <div class="q-text">What does a red blinking light followed by solid green mean?</div>
+      <div class="q-header"><span class="q-number">Question 7</span><span class="q-of">/ 10</span></div>
+      <div class="q-text">What do the LED light signals during the machine's startup procedure mean?</div>
       <div class="options">
-        <div class="option-wrapper"><button class="option" data-correct="true" data-label="A"><span class="opt-label">A</span><span class="opt-text">The unit is operational and ready.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="B"><span class="opt-label">B</span><span class="opt-text">The filter needs replacing.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="C"><span class="opt-label">C</span><span class="opt-text">Temperature has reached 100°C.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="D"><span class="opt-label">D</span><span class="opt-text">Hopper is out of alignment.</span></button></div>
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="The machine doesn't reach boiling temps, and flashing green isn't the indicator.">
+            <span class="opt-label">A</span><span class="opt-text">Flashing green means the temperature is 100°C.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">The machine doesn't reach boiling temps, and flashing green isn't the indicator.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Correct! Red blinking followed by solid green confirms the self-test passed.">
+            <span class="opt-label">B</span><span class="opt-text">Red blinking followed by solid green confirms operation.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Correct! Red blinking followed by solid green confirms the self-test passed.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Blue lights are associated with sensors or connectivity, not filters.">
+            <span class="opt-label">C</span><span class="opt-text">Solid blue indicates the filter needs replacement.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Blue lights are associated with sensors or connectivity, not filters.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="Solid red is an error code, usually involving the power or lid.">
+            <span class="opt-label">D</span><span class="opt-text">Solid red means the hopper is out of alignment.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Solid red is an error code, usually involving the power or lid.</div>
+          </div>
+        </div>
       </div>
       <button class="next-btn hidden">Next Question →</button>
     </div>
 
     <div class="question" data-index="7">
-      <div class="q-header"><span class="q-number">Question 8</span><span>/ 10</span></div>
-      <div class="q-text">Why must you avoid adding liquids like soup or milk?</div>
+      <div class="q-header"><span class="q-number">Question 8</span><span class="q-of">/ 10</span></div>
+      <div class="q-text">Why must you avoid adding liquids (soup/milk) to the LILA composter?</div>
       <div class="options">
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="A"><span class="opt-label">A</span><span class="opt-text">It attracts insects immediately.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="true" data-label="B"><span class="opt-label">B</span><span class="opt-text">It causes leaks and anaerobic, stinky conditions.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="C"><span class="opt-label">C</span><span class="opt-text">It short-circuits the motor.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="D"><span class="opt-label">D</span><span class="opt-text">It prevents the carbon pellets from working.</span></button></div>
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="true" data-rationale="Correct! Too much moisture drowns microbes and creates anaerobic, stinky conditions.">
+            <span class="opt-label">A</span><span class="opt-text">Excess moisture can cause leaks or stinky, pasty compost.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Correct! Too much moisture drowns microbes and creates anaerobic, stinky conditions.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Liquids won't hit the pellets unless the machine is tilted significantly.">
+            <span class="opt-label">B</span><span class="opt-text">Liquids dissolve the carbon filtration pellets.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Liquids won't hit the pellets unless the machine is tilted significantly.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Microbes can digest these, but the liquid state ruins the aeration.">
+            <span class="opt-label">C</span><span class="opt-text">Microbes cannot digest liquid proteins or sugars.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Microbes can digest these, but the liquid state ruins the aeration.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="The heater does not shut off at a 10% threshold.">
+            <span class="opt-label">D</span><span class="opt-text">The heater shuts off if moisture is above 10%.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">The heater does not shut off at a 10% threshold.</div>
+          </div>
+        </div>
       </div>
       <button class="next-btn hidden">Next Question →</button>
     </div>
 
     <div class="question" data-index="8">
-      <div class="q-header"><span class="q-number">Question 9</span><span>/ 10</span></div>
-      <div class="q-text">What is the "Active" phase in the LILA cycle?</div>
+      <div class="q-header"><span class="q-number">Question 9</span><span class="q-of">/ 10</span></div>
+      <div class="q-text">How should carbon pellets be handled for the P50N model?</div>
       <div class="options">
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="A"><span class="opt-label">A</span><span class="opt-text">The time spent cooling down.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="true" data-label="B"><span class="opt-label">B</span><span class="opt-text">The period when fresh waste is being broken down.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="C"><span class="opt-label">C</span><span class="opt-text">The manual rotation process.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="D"><span class="opt-label">D</span><span class="opt-text">When the machine is unplugged.</span></button></div>
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Grinding them is unnecessary and blocks airflow.">
+            <span class="opt-label">A</span><span class="opt-text">They should be ground into a fine powder.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Grinding them is unnecessary and blocks airflow.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="false" data-rationale="Pellets are for the lid filtration, not the compost chambers.">
+            <span class="opt-label">B</span><span class="opt-text">Mix them directly into the starter soil.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Pellets are for the lid filtration, not the compost chambers.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Activation by water is not required; they must stay dry to adsorb odors.">
+            <span class="opt-label">C</span><span class="opt-text">Soak them in water for 24 hours first.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Activation by water is not required; they must stay dry to adsorb odors.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="true" data-rationale="Correct! Pellets must be loose in the filtration cup to effectively absorb odors.">
+            <span class="opt-label">D</span><span class="opt-text">Remove from bag and pour into the designated cup in the front lid.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Correct! Pellets must be loose in the filtration cup to effectively absorb odors.</div>
+          </div>
+        </div>
       </div>
       <button class="next-btn hidden">Next Question →</button>
     </div>
 
     <div class="question" data-index="9">
-      <div class="q-header"><span class="q-number">Question 10</span><span>/ 10</span></div>
-      <div class="q-text">Where should carbon pellets be placed?</div>
+      <div class="q-header"><span class="q-number">Question 10</span><span class="q-of">/ 10</span></div>
+      <div class="q-text">If LILA is left unattended for more than 5 days, what is recommended?</div>
       <div class="options">
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="A"><span class="opt-label">A</span><span class="opt-text">Mixed with the food waste.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="B"><span class="opt-label">B</span><span class="opt-text">In the bottom collection tray.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="true" data-label="C"><span class="opt-label">C</span><span class="opt-text">Inside the front lid filtration module.</span></button></div>
-        <div class="option-wrapper"><button class="option" data-correct="false" data-label="D"><span class="opt-label">D</span><span class="opt-text">Stored in the back chamber.</span></button></div>
+        <div class="option-wrapper">
+          <button class="option" data-label="A" data-correct="false" data-rationale="Adding water without food leads to stagnation and odors.">
+            <span class="opt-label">A</span><span class="opt-text">Add 1 liter of water to keep microbes hydrated.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Adding water without food leads to stagnation and odors.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="B" data-correct="true" data-rationale="Correct! Powering down prevents odors and unnecessary running while you're away.">
+            <span class="opt-label">B</span><span class="opt-text">Empty the chambers and turn off the machine.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Correct! Powering down prevents odors and unnecessary running while you're away.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="C" data-correct="false" data-rationale="Moving the machine is unnecessary if powered off.">
+            <span class="opt-label">C</span><span class="opt-text">Move the machine to a basement.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">Moving the machine is unnecessary if powered off.</div>
+          </div>
+        </div>
+        <div class="option-wrapper">
+          <button class="option" data-label="D" data-correct="false" data-rationale="The sensor will blink and it won't run if the lid is open.">
+            <span class="opt-label">D</span><span class="opt-text">Leave the back lid open for airflow.</span>
+          </button>
+          <div class="option-feedback hidden">
+            <div class="feedback-status"></div><div class="feedback-rationale">The sensor will blink and it won't run if the lid is open.</div>
+          </div>
+        </div>
       </div>
       <button class="next-btn hidden">Next Question →</button>
     </div>
@@ -194,57 +506,93 @@ body {
 
   <div class="results" id="results">
     <h2>Quiz Complete!</h2>
-    <div class="score" id="final-score">0/10</div>
-    <p class="score-text">Great job learning about your LILA Composter!</p>
-    <button class="restart-btn" onclick="location.reload()">Restart Quiz</button>
+    <div class="score" id="score">0%</div>
+    <div class="score-text" id="score-text"></div>
+    <button class="restart-btn" onclick="restart()">Try Again</button>
   </div>
 </div>
 
 <script>
-const questions = document.querySelectorAll('.question');
-const nextBtn = document.querySelectorAll('.next-btn');
-const progress = document.getElementById('progress');
-let currentQ = 0;
-let score = 0;
+// Shuffled logic mapping
+const quizData = [
+  { isCorrect: "B" }, { isCorrect: "C" }, { isCorrect: "A" }, { isCorrect: "B" },
+  { isCorrect: "D" }, { isCorrect: "C" }, { isCorrect: "B" }, { isCorrect: "A" },
+  { isCorrect: "D" }, { isCorrect: "B" }
+];
 
-function updateProgress() {
-  progress.style.width = ((currentQ + 1) / questions.length) * 100 + '%';
+const tr = {"rightAnswer":"Right answer","notQuite":"Not quite","scoreText":"You got {correct} out of {total} correct","seeResults":"See Results","next":"Next Question →"};
+let currentQ = 0, correctCount = 0, answered = false;
+
+function init() {
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === 0));
+  updateProgress();
+  document.querySelectorAll('.option').forEach(opt => opt.addEventListener('click', () => selectOption(opt)));
+  document.querySelectorAll('.next-btn').forEach(btn => btn.addEventListener('click', nextQuestion));
 }
 
-document.querySelectorAll('.option').forEach(btn => {
-  btn.addEventListener('click', function() {
-    const parent = this.closest('.options');
-    if (parent.classList.contains('answered')) return;
-
-    parent.classList.add('answered');
-    const isCorrect = this.dataset.correct === 'true';
+function selectOption(opt) {
+  if (answered) return;
+  answered = true;
+  const q = opt.closest('.question');
+  const options = q.querySelectorAll('.option');
+  const nextBtn = q.querySelector('.next-btn');
+  const isCorrect = opt.dataset.correct === 'true';
+  
+  options.forEach(o => o.classList.add('disabled'));
+  opt.classList.add('selected', isCorrect ? 'correct' : 'incorrect');
+  
+  if (!isCorrect) {
+    const correctOpt = [...options].find(o => o.dataset.correct === 'true');
+    if (correctOpt) correctOpt.classList.add('show-correct');
+  }
+  
+  if (isCorrect) correctCount++;
+  
+  options.forEach(o => {
+    const wrapper = o.closest('.option-wrapper');
+    const feedback = wrapper.querySelector('.option-feedback');
+    const rationale = o.dataset.rationale;
+    const isThisCorrect = o.dataset.correct === 'true';
     
-    if (isCorrect) {
-      this.classList.add('correct');
-      score++;
-    } else {
-      this.classList.add('incorrect');
-      parent.querySelector('[data-correct="true"]').classList.add('correct');
-    }
-
-    this.closest('.question').querySelector('.next-btn').classList.remove('hidden');
-  });
-});
-
-document.querySelectorAll('.next-btn').forEach(btn => {
-  btn.addEventListener('click', () => {
-    questions[currentQ].classList.remove('active');
-    currentQ++;
-    if (currentQ < questions.length) {
-      questions[currentQ].classList.add('active');
-      updateProgress();
-    } else {
-      document.getElementById('quiz-container').classList.add('hidden');
-      document.getElementById('results').classList.add('active');
-      document.getElementById('final-score').innerText = `${score}/${questions.length}`;
+    if (rationale) {
+      feedback.classList.remove('hidden');
+      feedback.classList.add(isThisCorrect ? 'correct-feedback' : 'incorrect-feedback');
+      const statusEl = feedback.querySelector('.feedback-status');
+      statusEl.className = 'feedback-status ' + (isThisCorrect ? 'correct' : 'incorrect');
+      statusEl.innerHTML = isThisCorrect ? '✓ ' + tr.rightAnswer : '✗ ' + tr.notQuite;
     }
   });
-});
+  
+  nextBtn.classList.remove('hidden');
+  if (currentQ === 9) nextBtn.textContent = tr.seeResults;
+}
+
+function nextQuestion() {
+  answered = false;
+  currentQ++;
+  if (currentQ >= 10) { showResults(); return; }
+  document.querySelectorAll('.question').forEach((q, i) => q.classList.toggle('active', i === currentQ));
+  updateProgress();
+}
+
+function updateProgress() {
+  document.querySelector('.progress-fill').style.width = (currentQ / 10 * 100) + '%';
+}
+
+function showResults() {
+  document.getElementById('quiz-container').style.display = 'none';
+  document.getElementById('results').classList.add('active');
+  const pct = Math.round((correctCount / 10) * 100);
+  document.getElementById('score').textContent = pct + '%';
+  document.getElementById('score-text').textContent = tr.scoreText.replace('{correct}', correctCount).replace('{total}', 10);
+  document.querySelector('.progress-fill').style.width = '100%';
+}
+
+function restart() {
+  location.reload();
+}
+
+init();
 </script>
 </body>
 </html>
